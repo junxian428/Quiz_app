@@ -46,6 +46,33 @@ let currentQuestionIndex = 0;
 
 app.get('/quiz', (req, res) => {
   const username = req.query.username; // Extracting username from the query parameter
+  var id = "";
+  db.get('SELECT id FROM users WHERE username = ?', [username], (err, row) => {
+    if (err) {
+      return console.error(err.message);
+    }
+  
+    if (row) {
+      console.log(`User ID for ${username}: ${row.id}`);
+      id = row.id;
+
+      db.get('SELECT questionIndex FROM user_answers WHERE id = ?', [parseInt(id)], (err, row) => {
+        if (err) {
+          return console.error(err.message);
+        }
+      
+        if (row) {
+          console.log(`Question Index for ${id}: ${row.questionIndex}`);
+        } 
+      });
+      
+    }
+  });
+
+
+
+  
+
 
   const data = {
     pageTitle: 'Quiz',

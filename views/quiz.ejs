@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageTitle %></title>
+    <style>
+           body {
+            background-color: #222;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <% if (question) { %>
+        <h1>Question <%= questionNumber %></h1>
+        <p><%= question %></p>
+        <form action="/quiz" method="post">
+            <!-- Add options for the user to choose from -->
+            <!-- Example: -->
+            <input type="radio" name="answer" value="option1"> Option 1<br>
+            <input type="radio" name="answer" value="option2"> Option 2<br>
+            <input type="radio" name="answer" value="option3"> Option 3<br>
+            <input type="radio" name="answer" value="option4"> Option 4<br>
+            <input type="hidden" name="username" value="<%= username %>"> <!-- Add this line -->
+            <button type="submit" style="width: 100%; box-sizing: border-box; padding: 10px; background-color: #00ff00; color: #fff;">Next</button>
+        </form>
+    <% } else { %>
+        <h1>Quiz Completed!</h1>
+        <form action="/welcome/<%= userId %>" method="get">
+            <button type="submit">Go to Dashboard</button>
+        </form>
+    <% } %>
+</body>
+</html>

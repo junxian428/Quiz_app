@@ -47,6 +47,7 @@ let currentQuestionIndex = 0;
 app.get('/quiz', (req, res) => {
   const username = req.query.username; // Extracting username from the query parameter
   var id = "";
+  var rowIndex = "";
   db.get('SELECT id FROM users WHERE username = ?', [username], (err, row) => {
     if (err) {
       return console.error(err.message);
@@ -63,9 +64,11 @@ app.get('/quiz', (req, res) => {
       
         if (row) {
           console.log(`Question Index for ${id}: ${row.questionIndex}`);
+          currentQuestionIndex = row.questionIndex;
+          rowIndex = row.questionIndex;
         } 
       });
-      
+
     }
   });
 
@@ -89,7 +92,24 @@ app.get('/quiz', (req, res) => {
     };
     res.render('quiz', questionData);
     
-    currentQuestionIndex++;
+    //currentQuestionIndex++;
+  
+      //
+      const query = `
+    UPDATE user_answers
+    SET questionIndex = ?
+    WHERE id = ?;
+`;
+    rowIndex += 1;
+    console.log("Question No: " + rowIndex );
+    db.run(query, [currentQuestionIndex, parseInt(id)], function(err) {
+      if (err) {
+        return console.error(err.message);
+      }
+      
+      console.log(`Row(s) updated: ${this.changes}`);
+    });
+
   } else {
     currentQuestionIndex = 0;
       res.send(`

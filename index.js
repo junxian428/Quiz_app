@@ -42,90 +42,58 @@ const correctAnswers = ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4']; // Add 
 
 
 let currentQuestionIndex = 0;
+var rowIndex = 0;
 
 
 app.get('/quiz', (req, res) => {
-  const username = req.query.username; // Extracting username from the query parameter
-  var id = "";
-  var rowIndex = "";
+  const username = req.query.username;
+
   db.get('SELECT id FROM users WHERE username = ?', [username], (err, row) => {
     if (err) {
       return console.error(err.message);
     }
-  
+
     if (row) {
-      console.log(`User ID for ${username}: ${row.id}`);
-      id = row.id;
+      const id = row.id;
 
       db.get('SELECT questionIndex FROM user_answers WHERE id = ?', [parseInt(id)], (err, row) => {
         if (err) {
           return console.error(err.message);
         }
-      
-        if (row) {
-          console.log(`Question Index for ${id}: ${row.questionIndex}`);
-          currentQuestionIndex = row.questionIndex;
-          rowIndex = row.questionIndex;
-        } 
-      });
 
+        if (row) {
+          const currentQuestionIndex = parseInt(row.questionIndex);
+
+          const questionData = {
+            pageTitle: 'Quiz',
+            question: questions[currentQuestionIndex],
+            questionNumber: currentQuestionIndex + 1,
+            username: username,
+          };
+
+          res.render('quiz', questionData);
+
+          const newQuestionIndex = currentQuestionIndex + 1;
+
+          const query = `
+            UPDATE user_answers
+            SET questionIndex = ?
+            WHERE id = ?;
+          `;
+
+          db.run(query, [newQuestionIndex, parseInt(id)], function(err) {
+            if (err) {
+              return console.error(err.message);
+            }
+
+            console.log(`Row(s) updated: ${this.changes}. SQL Syntax ${newQuestionIndex} ${id}`);
+          });
+        }
+      });
     }
   });
-
-
-
-  
-
-
-  const data = {
-    pageTitle: 'Quiz',
-    message: `Quiz Answer for ${username}`, // Using the username in the message
-    errormessage: '',
-  };
-
-  if (currentQuestionIndex < questions.length) {
-    const questionData = {
-      pageTitle: 'Quiz',
-      question: questions[currentQuestionIndex],
-      questionNumber: currentQuestionIndex + 1,
-      username: username, // Adding username to data for rendering
-    };
-    res.render('quiz', questionData);
-    
-    //currentQuestionIndex++;
-  
-      //
-      const query = `
-    UPDATE user_answers
-    SET questionIndex = ?
-    WHERE id = ?;
-`;
-    rowIndex += 1;
-    console.log("Question No: " + rowIndex );
-    db.run(query, [currentQuestionIndex, parseInt(id)], function(err) {
-      if (err) {
-        return console.error(err.message);
-      }
-      
-      console.log(`Row(s) updated: ${this.changes}`);
-    });
-
-  } else {
-    currentQuestionIndex = 0;
-      res.send(`
-      <body style="       background-color: #222;color: #fff;font-family: Arial, sans-serif;">
-      <p style="text-align:center; margin-top:100px;">Quiz completed for ${username}!</p>
-      <br>
-      <br>
-          <form action="/welcome/${username}" method="get" style="    text-align: center;">
-          <input type="hidden" name="username" value="${username}">
-          <button type="submit" style="width: 100%; box-sizing: border-box; padding: 10px; background-color: #00ff00; color: #fff;"style="width: 100%; box-sizing: border-box; padding: 10px; background-color: #00ff00; color: #fff;">Go to Dashboard</button>
-        </form>
-      </body>
-   
-    `);
-    }
 });
+
 
 app.post('/quiz', (req, res) => {
   const userAnswer = req.body.answer; // Assuming 'answer' is the name attribute of your radio buttons

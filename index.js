@@ -125,30 +125,64 @@ app.get('/welcome/:username', (req, res) => {
 });
 
 
-app.get('/change-username', (req, res) => {
-  const username = req.body.username;
-  res.render('changeUsername', { username: username});
+app.get('/change-username/:username', (req, res) => {
+  const username = req.params.username;
+  console.log(username);
+  db.get('SELECT id FROM users WHERE username LIKE ?', [username], (err, row) => {
+    if (err) {
+      return console.error(err.message);
+    }
+
+    if (row) {
+      const userId = row.id;
+      res.render('changeUsername', { username: username, userId: userId }); // Send the userId to the template
+    } else {
+      res.send('User not found'); // Handle the case where the username isn't in the database
+    }
+  });
 });
+
+
+
 
 
 app.post('/change-username', (req, res) => {
   const newUsername = req.body.newUsername;
-  const username = newUsername;
+  const userId = req.body.userId;
 
-  // Assuming you have a function to update the username in the database
-  // Update the username in your database here
+  // Define the updateUsername function outside the route handler
+  const updateUsername = (userId, newUsername, callback) => {
+    db.run('UPDATE users SET username = ? WHERE id = ?', [newUsername, parseInt(userId)], function(err) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, this.changes); // Returns the number of rows affected
+    });
+  };
 
-  res.send(`
-  <body style="       background-color: #222;color: #fff;font-family: Arial, sans-serif;">
+  // Call the updateUsername function to update the database
+  updateUsername(userId, newUsername, (err, changes) => {
+    if (err) {
+      return console.error(err.message);
+    }
 
-  <p style="text-align:center; margin-top:100px;">Username changed to ${newUsername}</p>
-  <form action="/welcome/${newUsername}" method="get" style="text-align:center;">
-    <input type="hidden" name="username" value="${username}">
-    <button type="submit" style="width: 100%; box-sizing: border-box; padding: 10px; background-color: #00ff00; color: #fff;">Go to Dashboard</button>
-  </form>
+    console.log(`Username updated. Rows affected: ${changes}`);
 
-  </body>
-`);
+    // Assuming you have a function to update the username in the database
+    // Update the username in your database here
+
+    res.send(`
+      <body style="background-color: #222;color: #fff;font-family: Arial, sans-serif;">
+
+      <p style="text-align:center; margin-top:100px;">Username changed to ${newUsername}</p>
+      <form action="/welcome/${newUsername}" method="get" style="text-align:center;">
+        <input type="hidden" name="username" value="${newUsername}">
+        <button type="submit" style="width: 100%; box-sizing: border-box; padding: 10px; background-color: #00ff00; color: #fff;">Go to Dashboard</button>
+      </form>
+
+      </body>
+    `);
+  });
 });
 
 

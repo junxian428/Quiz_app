@@ -16,6 +16,9 @@
             height: 100vh;
             margin: 0;
         }
+        input[type="text"] {
+    height: 40px; /* Adjust the height as needed */
+}
     </style>
 </head>
 <body>
@@ -23,6 +26,8 @@
     <form action="/change-username" method="post">
         <input type="text" name="newUsername" placeholder="New Username" required>
         <input type="hidden" name="username" value="<%= username %>"> <!-- Add this line -->
+        <br>
+        <br>
         <button type="submit" style="width: 100%; box-sizing: border-box; padding: 10px; background-color: #00ff00; color: #fff;">Change Username</button>
     </form>
 </body>

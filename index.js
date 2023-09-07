@@ -38,6 +38,9 @@ const questions = [
   // Add all your questions here
 ];
 
+const correctAnswers = ['Answer 1', 'Answer 2', 'Answer 3', 'Answer 4']; // Add correct answers in corresponding order
+
+
 let currentQuestionIndex = 0;
 
 
@@ -80,6 +83,15 @@ app.get('/quiz', (req, res) => {
 app.post('/quiz', (req, res) => {
   const userAnswer = req.body.answer; // Assuming 'answer' is the name attribute of your radio buttons
   // Do something with the user's answer (e.g., compare with the correct answer)
+   // Compare user's answer with the correct answer
+   if (userAnswer === correctAnswers[currentQuestionIndex - 1]) {
+    // Handle correct answer
+    // You can keep track of the user's score here
+    console.log("You re right");
+  } else{
+    console.log("You re wrong");
+  }
+
 
   // Render the next question
   res.redirect(`/quiz?username=${req.body.username}`);
